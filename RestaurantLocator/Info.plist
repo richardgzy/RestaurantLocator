@@ -4,6 +4,12 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Restaurant Locator requires your location</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Restaurant Locator requires your Media Library</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Restaurant Locator requires your camera</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
