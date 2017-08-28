@@ -14,14 +14,14 @@ class restaurantTableViewController: UITableViewController, AddRestaurantDelegat
     var currentCategory: Category?
     var managedObjectContext: NSManagedObjectContext
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showRestaurantListSegue"
-        {
-            let controller: CategoryTableViewController = segue.destination as! CategoryTableViewController
-            controller.delegate = self
-        }
-    }
-    
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        if segue.identifier == "showRestaurantListSegue"
+//        {
+//            let controller: CategoryTableViewController = segue.destination as! CategoryTableViewController
+//            controller.delegate = self
+//        }
+//    }
+//    
     func addRestaurant(restaurant: Restaurant) {
         self.currentCategory?.addRestaurant(value: restaurant)
         self.allRestaurants = currentCategory?.containRestaurant?.allObjects as! [Restaurant]
@@ -43,14 +43,10 @@ class restaurantTableViewController: UITableViewController, AddRestaurantDelegat
     }
     
     override func viewDidLoad() {
+        if currentCategory != nil{
+            allRestaurants = currentCategory?.containRestaurant?.allObjects as! [Restaurant]
+        }
         super.viewDidLoad()
-        
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        
     }
 
     override func didReceiveMemoryWarning() {
@@ -83,13 +79,11 @@ class restaurantTableViewController: UITableViewController, AddRestaurantDelegat
             
             // Configure the cell...
             let s = self.allRestaurants[indexPath.row] as! Restaurant
-            //        cell.nameLabel.text = s.name
-            //        cell.abilitylabel.text = s.ability
-            
             cell.restaurantNameLabel.text = s.name!
-            var df: DateFormatter = DateFormatter()
+            let df: DateFormatter = DateFormatter()
             df.dateFormat = "dd-MM-yyyy"
-            cell.restaurantDateLabel.text = df.string(from: s.addDate! as! Date)
+            cell.restaurantDateLabel.text = df.string(from: s.addDate! as Date)
+            cell.restaurantImageView.image = UIImage(data: (s.logo!) as Data)
             return cell
         }
         else

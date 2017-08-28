@@ -9,10 +9,11 @@
 import UIKit
 
 class CategoryCell: UITableViewCell {
-    @IBOutlet weak var editCategoryButton: UIButton!
+    @IBOutlet weak var colorLabel: UILabel!
     @IBOutlet weak var categoryIcon: UIImageView!
     @IBOutlet weak var restaurantCountLabel: UILabel!
     @IBOutlet weak var categoryNameLabel: UILabel!
+    
     
     override func awakeFromNib() {
         super.awakeFromNib()

@@ -14,9 +14,11 @@ protocol AddRestaurantDelegate {
 }
 
 class CategoryTableViewController: UITableViewController {
+    
     @IBOutlet weak var mapViewButton: UIBarButtonItem!
     @IBOutlet weak var addNewCategoryButton: UIButton!
     var categoryList: [NSManagedObject] = []
+    var selectedCategory: Category?
     var delegate: AddRestaurantDelegate?
     var restaurantList: [NSManagedObject] = []
     var managedObjectContext : NSManagedObjectContext
@@ -27,27 +29,55 @@ class CategoryTableViewController: UITableViewController {
         super.init(coder: aDecoder)!
     }
     
+    //add sample data if the core data is empty
     func addSampleData(){
-        let sampleCategoryData = NSEntityDescription.insertNewObject(forEntityName: "Category", into: managedObjectContext) as? Category
-        sampleCategoryData!.name = "Sample Category"
-        sampleCategoryData!.color = "Red"
-        //icon setting
-        let image = UIImage(named: "chinese_food.jpg")
-        sampleCategoryData!.icon = UIImagePNGRepresentation(image!) as! NSData
-        
-        let sampleRestaurantData = NSEntityDescription.insertNewObject(forEntityName: "Restaurant", into: managedObjectContext) as? Restaurant
-        
-        sampleRestaurantData!.name = "Sample Restaurant"
-        sampleRestaurantData!.rating = 1
-        sampleRestaurantData!.addDate = NSDate()
-        sampleRestaurantData!.address = "Sample address"
-        sampleRestaurantData!.notificationRadius = 0
-        
-        sampleRestaurantData!.belongCategory = sampleCategoryData
-        sampleCategoryData!.containRestaurant = NSSet(array: [sampleRestaurantData])
+        //populate category data
+        populateCategoryAndRestaurantDataIntoCoreData(name: "Chinese Food", color: "Red", imageFilename: "chinese_food.jpg")
+        populateCategoryAndRestaurantDataIntoCoreData(name: "Australian Food", color: "Yellow", imageFilename: "australia_food.jpg")
+        populateCategoryAndRestaurantDataIntoCoreData(name: "Japanese Food", color: "Blue", imageFilename: "japanese_food.jpg")
         
         saveRecords()
     }
+    
+    // call this function will add a category record to core data
+    func populateCategoryAndRestaurantDataIntoCoreData(name: String, color: String, imageFilename: String){
+        let category = NSEntityDescription.insertNewObject(forEntityName: "Category", into: managedObjectContext) as? Category
+        category!.name = name
+        category!.color = color
+        let image = UIImage(named: imageFilename)
+        category!.icon = UIImagePNGRepresentation(image!) as NSData?
+        
+        //populate restaurants
+        switch name{
+            case "Chinese Food":
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "chinese_food.jpg")!, name: "New Shanghai", rating: 5, date: NSDate(), address: "323/287 Lonsdale St, Melbourne VIC 3000, Australia", notificationRadius: 0)
+                break
+            case "Australian Food":
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "australia_food.jpg")!, name: "Aussie Steak 'N' Burger", rating: 4, date: NSDate(), address: "12-16 Newquay Promenade, Docklands VIC 3008, Australia", notificationRadius: 0)
+                break
+            case "Japanese Food":
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "japanese_food.jpg")!, name: "Sushi Sushi", rating: 3, date: NSDate(), address: "B-141/1341 Dandenong Rd, Chadstone VIC 3148, Australia", notificationRadius: 0)
+                break
+        default: break
+        }
+    }
+    
+    func populateRestaurantDataIntoCoreData(destinationCategory: Category, logo: UIImage, name: String, rating: Int16, date: NSDate, address: String, notificationRadius: Int16 ){
+        let restaurantToBeAdded = NSEntityDescription.insertNewObject(forEntityName: "Restaurant", into: managedObjectContext) as? Restaurant
+        
+        restaurantToBeAdded!.name = name
+        restaurantToBeAdded!.rating = rating
+        restaurantToBeAdded!.addDate = date
+        restaurantToBeAdded!.address = address
+        restaurantToBeAdded!.notificationRadius = notificationRadius
+        restaurantToBeAdded!.belongCategory = destinationCategory
+        restaurantToBeAdded!.logo = UIImagePNGRepresentation(logo) as NSData?
+        var tempArray: [Restaurant] = []
+        tempArray.append(restaurantToBeAdded!)
+        destinationCategory.containRestaurant = NSSet(array: tempArray)
+    }
+    
+    //call this function will add a
     
     func saveRecords(){
         do {
@@ -70,7 +100,7 @@ class CategoryTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+            
         let fetchRequestForCategory = NSFetchRequest<NSManagedObject>(entityName: "Category")
         let fetchRequestForRestaurant = NSFetchRequest<NSManagedObject>(entityName: "Restaurant")
         
@@ -87,23 +117,28 @@ class CategoryTableViewController: UITableViewController {
             let fetchError = error as NSError
             print(fetchError)
         }
-        
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-        
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedCategory = self.categoryList[indexPath.row] as? Category
+        self.performSegue(withIdentifier: "showRestaurantListSegue", sender: (Any).self)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let destinationVC = segue.destination as? restaurantTableViewController{
+            if selectedCategory != nil{
+                destinationVC.currentCategory = selectedCategory
+            }
+        }
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     // MARK: - Table view data source
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 2
     }
     
@@ -132,12 +167,20 @@ class CategoryTableViewController: UITableViewController {
                 cell.restaurantCountLabel.text = "Total Restaurants: \(restaurantNumber)"
 //            }
             
-            if s.color == "Red"{
-                cell.backgroundColor = UIColor.red
+            switch s.color!{
+                case "Red":
+                    cell.colorLabel.backgroundColor = UIColor.red
+                    break
+                case "Yellow":
+                    cell.colorLabel.backgroundColor = UIColor.yellow
+                    break
+                case "Blue":
+                    cell.colorLabel.backgroundColor = UIColor.blue
+            default:
+                    break
             }
             
-            cell.categoryIcon.image = UIImage(data: (s.icon as! NSData) as! Data)
-            
+            cell.categoryIcon.image = UIImage(data: (s.icon!) as Data)
             
             return cell
         }
@@ -149,50 +192,8 @@ class CategoryTableViewController: UITableViewController {
         }
     }
     
-    
-    /*
-     // Override to support conditional editing of the table view.
-     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-     // Return false if you do not want the specified item to be editable.
-     return true
-     }
-     */
-    
-    /*
-     // Override to support editing the table view.
-     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-     if editingStyle == .delete {
-     // Delete the row from the data source
-     tableView.deleteRows(at: [indexPath], with: .fade)
-     } else if editingStyle == .insert {
-     // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-     }
-     }
-     */
-    
-    /*
-     // Override to support rearranging the table view.
-     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-     
-     }
-     */
-    
-    /*
-     // Override to support conditional rearranging of the table view.
-     override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-     // Return false if you do not want the item to be re-orderable.
-     return true
-     }
-     */
-    
-    /*
-     // MARK: - Navigation
-     
-     // In a storyboard-based application, you will often want to do a little preparation before navigation
-     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-     // Get the new view controller using segue.destinationViewController.
-     // Pass the selected object to the new view controller.
-     }
-     */
+//    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+//        return 110
+//    }
     
 }
