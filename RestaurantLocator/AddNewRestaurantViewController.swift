@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class AddNewRestaurantViewController: UIViewController {
     @IBOutlet weak var nameTextField: UITextField!
@@ -19,11 +20,13 @@ class AddNewRestaurantViewController: UIViewController {
     @IBOutlet weak var currentLocationButton: UIButton!
     @IBOutlet weak var newLocationButton: UIButton!
     
+    var currentRestaurant: Restaurant?
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        nameTextField.text = currentRestaurant!.name
+        
     }
 
     override func didReceiveMemoryWarning() {

@@ -9,19 +9,50 @@
 import UIKit
 import CoreData
 
-protocol AddRestaurantDelegate {
-    func addRestaurant(restaurant: Restaurant)
-}
+class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
 
-class CategoryTableViewController: UITableViewController {
-    
-    @IBOutlet weak var mapViewButton: UIBarButtonItem!
-    @IBOutlet weak var addNewCategoryButton: UIButton!
+    @IBAction func addNewCategoryButton(_ sender: Any) {
+        performSegue(withIdentifier: "addNewCategorySegue", sender: "Add Category Button")
+    }
     var categoryList: [NSManagedObject] = []
     var selectedCategory: Category?
-    var delegate: AddRestaurantDelegate?
     var restaurantList: [NSManagedObject] = []
     var managedObjectContext : NSManagedObjectContext
+    
+    //set up the tableview edit button
+    @IBAction func categoryEditButton(_ sender: UIBarButtonItem) {
+        if self.tableView.isEditing {
+            self.tableView.isEditing = false
+            self.tableView.setEditing(false, animated: false)
+            sender.style = UIBarButtonItemStyle.plain
+            sender.title = "Edit"
+            self.tableView.reloadData()
+        } else {
+            self.tableView.isEditing = true
+            self.tableView.setEditing(true, animated: true)
+            sender.title = "Done"
+            sender.style =  UIBarButtonItemStyle.done
+            self.tableView.reloadData()
+        }
+    }
+    
+    //define what to do when user rearrange the table cells
+    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        
+        let item : Category = categoryList[sourceIndexPath.row] as! Category;
+        categoryList.remove(at: sourceIndexPath.row);
+        categoryList.insert(item, at: destinationIndexPath.row)
+        self.saveAllChanges()
+        self.tableView.reloadData()
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == UITableViewCellEditingStyle.delete{
+            categoryList.remove(at: indexPath.row);
+            self.categoryEditButton(editButtonItem);
+            tableView.reloadData();
+        }
+    }
     
     required init?(coder aDecoder: NSCoder) {
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -36,7 +67,7 @@ class CategoryTableViewController: UITableViewController {
         populateCategoryAndRestaurantDataIntoCoreData(name: "Australian Food", color: "Yellow", imageFilename: "australia_food.jpg")
         populateCategoryAndRestaurantDataIntoCoreData(name: "Japanese Food", color: "Blue", imageFilename: "japanese_food.jpg")
         
-        saveRecords()
+        saveAllChanges()
     }
     
     // call this function will add a category record to core data
@@ -77,22 +108,10 @@ class CategoryTableViewController: UITableViewController {
         destinationCategory.containRestaurant = NSSet(array: tempArray)
     }
     
-    //call this function will add a
-    
-    func saveRecords(){
+    //call this function to save all changes in managedObjectContext
+    func saveAllChanges(){
         do {
             try self.managedObjectContext.save()
-            //try to refresh the data?
-            do {
-                let fetchRequestForCategory = NSFetchRequest<NSManagedObject>(entityName: "Category")
-                try self.categoryList = managedObjectContext.fetch(fetchRequestForCategory)
-                
-                let fetchRequestForRestaurant = NSFetchRequest<NSManagedObject>(entityName: "Restaurant")
-                try self.restaurantList = managedObjectContext.fetch(fetchRequestForRestaurant)
-            } catch {
-                let fetchError = error as NSError
-                print(fetchError)
-            }
         } catch {
             print("cannot save \(error)")
         }
@@ -119,17 +138,71 @@ class CategoryTableViewController: UITableViewController {
         }
     }
     
+    //perform segue and direct user to the restaurant detail page
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedCategory = self.categoryList[indexPath.row] as? Category
-        self.performSegue(withIdentifier: "showRestaurantListSegue", sender: (Any).self)
+        self.performSegue(withIdentifier: "showRestaurantListSegue", sender: "Category Cell Touch")
     }
     
+    override func tableView(_ tableView: UITableView, willBeginEditingRowAt indexPath: IndexPath) {
+        selectedCategory = self.categoryList[(indexPath.row)] as? Category
+    }
+    
+    
+    //prepare for segue and pass data to next view controller
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let destinationVC = segue.destination as? restaurantTableViewController{
             if selectedCategory != nil{
                 destinationVC.currentCategory = selectedCategory
+                destinationVC.managedObjectContext = self.managedObjectContext
+            }
+        }else if let destinationVC = segue.destination as? AddCategoryViewController{
+            if sender as! String == "Add Category Button"{
+                destinationVC.currentCategory = nil
+                destinationVC.managedObjectContext = self.managedObjectContext
+                destinationVC.delegate = self
+            }else{
+                destinationVC.currentCategory = selectedCategory
+                destinationVC.managedObjectContext = self.managedObjectContext
+                destinationVC.delegate = self
             }
         }
+    }
+    
+    // implement delegate function
+    func addCategory(newCategory: Category) {
+        categoryList.append(newCategory)
+        self.tableView.reloadData()
+    }
+    
+    // all cells except the total cell are editable
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    override func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
+        
+        let editOption = UITableViewRowAction(style: .normal, title: "Edit") { action, index in
+            self.performSegue(withIdentifier: "addNewCategorySegue", sender: "Category Edit Button")
+        }
+        editOption.backgroundColor = .orange
+        
+        let deleteOption = UITableViewRowAction(style: .normal, title: "Delete") { action, index in
+            let toBeDeleted = self.categoryList[editActionsForRowAt.row]
+            self.categoryList.remove(at: editActionsForRowAt.row)
+            self.managedObjectContext.delete(toBeDeleted)
+            self.saveAllChanges()
+            
+            tableView.reloadData()
+        }
+        deleteOption.backgroundColor = .red
+        
+        return [deleteOption, editOption]
+    }
+    
+    // all cells are moveable
+    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        return true
     }
     
     override func didReceiveMemoryWarning() {
@@ -139,25 +212,18 @@ class CategoryTableViewController: UITableViewController {
     // MARK: - Table view data source
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return 1
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        switch (section){
-        case 0: return self.categoryList.count
-        case 1: return 1
-        default:
-            return 0
-        }
+        return self.categoryList.count
     }
     
+    //configure the cell
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.section == 0
-        {
             let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! CategoryCell
             
-            // Configure the cell...
             let s = self.categoryList[indexPath.row] as! Category
             cell.categoryNameLabel.text = s.name!
             let restaurantNumber = s.containRestaurant!.count
@@ -176,6 +242,12 @@ class CategoryTableViewController: UITableViewController {
                     break
                 case "Blue":
                     cell.colorLabel.backgroundColor = UIColor.blue
+                    break
+                case "Grey":
+                    cell.colorLabel.backgroundColor = UIColor.gray
+                    break
+                case "Green":
+                    cell.colorLabel.backgroundColor = UIColor.green
             default:
                     break
             }
@@ -183,13 +255,6 @@ class CategoryTableViewController: UITableViewController {
             cell.categoryIcon.image = UIImage(data: (s.icon!) as Data)
             
             return cell
-        }
-        else
-        {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryTotalCell", for: indexPath)
-            cell.textLabel?.text = "Total Category: \(self.categoryList.count)"
-            return cell
-        }
     }
     
 //    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

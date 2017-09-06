@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import CoreLocation
 
 class RestaurantDetailViewController: UIViewController {
     var currentRestaurant: Restaurant?
@@ -16,8 +17,8 @@ class RestaurantDetailViewController: UIViewController {
     @IBOutlet weak var categoryLabel: UILabel!
     @IBOutlet weak var NavagationTitle: UINavigationItem!
     @IBOutlet weak var ratingLabel: UILabel!
+    @IBOutlet weak var addressTextView: UITextView!
     @IBOutlet weak var dateLabel: UILabel!
-    @IBOutlet weak var addressLabel: UILabel!
     @IBOutlet weak var rangeSegmentControl: UISegmentedControl!
     @IBOutlet weak var mapView: MKMapView!
     
@@ -26,12 +27,56 @@ class RestaurantDetailViewController: UIViewController {
 
         // Do any additional setup after loading the view.
         
-        self.iconView.image = currentRestaurant!.logo as? UIImage
+        self.iconView.image = UIImage(data: (currentRestaurant?.logo!)! as Data)
         self.NavagationTitle.title = currentRestaurant!.name
-        self.categoryLabel.text = currentRestaurant!.category
+        self.categoryLabel.text = currentRestaurant!.belongCategory?.name
         self.ratingLabel.text = "Rating: \(currentRestaurant!.rating) Stars"
-        self.dateLabel.text = "Added in: \(currentRestaurant!.addDate)"
+        self.addressTextView.text = currentRestaurant!.address
+        let df: DateFormatter = DateFormatter()
+        df.dateFormat = "dd-mm-yyyy"
+        self.dateLabel.text = "Added in: \(df.string(from: currentRestaurant!.addDate! as Date))"
+        let range: Int16 = currentRestaurant!.notificationRadius
+        switch range{
+        case 0:
+            self.rangeSegmentControl.selectedSegmentIndex = 0
+            break
+        case 50:
+            self.rangeSegmentControl.selectedSegmentIndex = 1
+            break
+        case 250:
+            self.rangeSegmentControl.selectedSegmentIndex = 2
+            break
+        case 500:
+            self.rangeSegmentControl.selectedSegmentIndex = 3
+            break
+        case 1000:
+            self.rangeSegmentControl.selectedSegmentIndex = 4
+            break
+        default:
+            break
+        }
         
+        let address = currentRestaurant?.address
+        let geoCoder = CLGeocoder()
+        geoCoder.geocodeAddressString(address!) { (placemarks, error) in
+            guard
+                let placemarks = placemarks,
+                let location = placemarks.first?.location
+                else {
+                    // handle no location found
+                    let alert = UIAlertController(title: "Alert", message: "location not found", preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.default, handler: nil))
+                    self.present(alert, animated: true, completion: nil)
+                    return
+            }
+            // Use your location
+            let image: UIImage = UIImage(data: (self.currentRestaurant?.logo!)! as Data)!
+            
+            let myAnnotation: MyAnnotation = MyAnnotation(newTitle: self.currentRestaurant!.name!, newNotificationRadius: (self.currentRestaurant?.notificationRadius)!, newIcon: image, lat: location.coordinate.latitude, long: location.coordinate.longitude)
+            self.mapView.addAnnotation(myAnnotation)
+            let mapRegion = MKCoordinateRegionMakeWithDistance(myAnnotation.coordinate, 500, 500)
+            self.mapView.setRegion(mapRegion, animated: true)
+        }
     }
 
     override func didReceiveMemoryWarning() {

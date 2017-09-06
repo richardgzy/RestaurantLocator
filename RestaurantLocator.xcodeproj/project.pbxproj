@@ -19,6 +19,12 @@
 		791854D61F4D9A5E00712054 /* RestaurantCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 791854D51F4D9A5E00712054 /* RestaurantCell.swift */; };
 		791854DA1F4D9AF400712054 /* RestaurantDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 791854D91F4D9AF400712054 /* RestaurantDetailViewController.swift */; };
 		794BCB6B1F544349000931D5 /* Pinpoint-Bookmarking-App-Icon-ONLY-180px.png in Resources */ = {isa = PBXBuildFile; fileRef = 794BCB6A1F544349000931D5 /* Pinpoint-Bookmarking-App-Icon-ONLY-180px.png */; };
+		794BCB6D1F57BEC4000931D5 /* AddCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794BCB6C1F57BEC4000931D5 /* AddCategoryViewController.swift */; };
+		794BCB6F1F59188B000931D5 /* doge.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 794BCB6E1F59188B000931D5 /* doge.jpg */; };
+		794BCB711F5CF1CD000931D5 /* MyAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794BCB701F5CF1CD000931D5 /* MyAnnotation.swift */; };
+		794BCB761F5F785E000931D5 /* category_default_icon.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 794BCB741F5F785E000931D5 /* category_default_icon.jpg */; };
+		794BCB771F5F785E000931D5 /* restaurant_default_icon.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 794BCB751F5F785E000931D5 /* restaurant_default_icon.jpg */; };
+		794BCB791F5F93C9000931D5 /* mapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794BCB781F5F93C9000931D5 /* mapViewController.swift */; };
 		794C48C81F4FD5D800BBA391 /* CategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794C48C71F4FD5D800BBA391 /* CategoryCell.swift */; };
 		794C48CA1F5193DB00BBA391 /* AddNewRestaurantViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794C48C91F5193DB00BBA391 /* AddNewRestaurantViewController.swift */; };
 		79CEE8991F52672E00A174E6 /* CategoryTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CEE8981F52672E00A174E6 /* CategoryTableViewController.swift */; };
@@ -67,6 +73,12 @@
 		791854D51F4D9A5E00712054 /* RestaurantCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestaurantCell.swift; sourceTree = "<group>"; };
 		791854D91F4D9AF400712054 /* RestaurantDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RestaurantDetailViewController.swift; path = ../RestaurantDetailViewController.swift; sourceTree = "<group>"; };
 		794BCB6A1F544349000931D5 /* Pinpoint-Bookmarking-App-Icon-ONLY-180px.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Pinpoint-Bookmarking-App-Icon-ONLY-180px.png"; path = "../../../Downloads/Pinpoint-Bookmarking-App-Icon-ONLY-180px.png"; sourceTree = "<group>"; };
+		794BCB6C1F57BEC4000931D5 /* AddCategoryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddCategoryViewController.swift; sourceTree = "<group>"; };
+		794BCB6E1F59188B000931D5 /* doge.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = doge.jpg; sourceTree = SOURCE_ROOT; };
+		794BCB701F5CF1CD000931D5 /* MyAnnotation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyAnnotation.swift; sourceTree = "<group>"; };
+		794BCB741F5F785E000931D5 /* category_default_icon.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = category_default_icon.jpg; path = ../../../Downloads/category_default_icon.jpg; sourceTree = "<group>"; };
+		794BCB751F5F785E000931D5 /* restaurant_default_icon.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = restaurant_default_icon.jpg; path = ../../../Downloads/restaurant_default_icon.jpg; sourceTree = "<group>"; };
+		794BCB781F5F93C9000931D5 /* mapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mapViewController.swift; sourceTree = "<group>"; };
 		794C48C71F4FD5D800BBA391 /* CategoryCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CategoryCell.swift; sourceTree = "<group>"; };
 		794C48C91F5193DB00BBA391 /* AddNewRestaurantViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddNewRestaurantViewController.swift; sourceTree = "<group>"; };
 		79CEE8981F52672E00A174E6 /* CategoryTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CategoryTableViewController.swift; sourceTree = "<group>"; };
@@ -131,10 +143,15 @@
 		791854A11F4D92B500712054 /* RestaurantLocator */ = {
 			isa = PBXGroup;
 			children = (
+				794BCB741F5F785E000931D5 /* category_default_icon.jpg */,
+				794BCB751F5F785E000931D5 /* restaurant_default_icon.jpg */,
+				794BCB6E1F59188B000931D5 /* doge.jpg */,
 				791854A21F4D92B500712054 /* AppDelegate.swift */,
 				791854D91F4D9AF400712054 /* RestaurantDetailViewController.swift */,
 				791854A41F4D92B500712054 /* ViewController.swift */,
 				791854A61F4D92B500712054 /* Main.storyboard */,
+				794BCB781F5F93C9000931D5 /* mapViewController.swift */,
+				794BCB6C1F57BEC4000931D5 /* AddCategoryViewController.swift */,
 				79CEE8981F52672E00A174E6 /* CategoryTableViewController.swift */,
 				794C48C91F5193DB00BBA391 /* AddNewRestaurantViewController.swift */,
 				794C48C71F4FD5D800BBA391 /* CategoryCell.swift */,
@@ -148,6 +165,7 @@
 				79DA47701F52C8C500A1643F /* australia_food.jpg */,
 				79DA47711F52C8C500A1643F /* japanese_food.jpg */,
 				794BCB6A1F544349000931D5 /* Pinpoint-Bookmarking-App-Icon-ONLY-180px.png */,
+				794BCB701F5CF1CD000931D5 /* MyAnnotation.swift */,
 			);
 			path = RestaurantLocator;
 			sourceTree = "<group>";
@@ -283,10 +301,13 @@
 				791854B01F4D92B500712054 /* LaunchScreen.storyboard in Resources */,
 				794BCB6B1F544349000931D5 /* Pinpoint-Bookmarking-App-Icon-ONLY-180px.png in Resources */,
 				791854AD1F4D92B500712054 /* Assets.xcassets in Resources */,
+				794BCB771F5F785E000931D5 /* restaurant_default_icon.jpg in Resources */,
 				791854A81F4D92B500712054 /* Main.storyboard in Resources */,
 				79DA47761F53980400A1643F /* chinese_food.jpg in Resources */,
 				79DA47741F52C8C500A1643F /* japanese_food.jpg in Resources */,
+				794BCB6F1F59188B000931D5 /* doge.jpg in Resources */,
 				79DA47731F52C8C500A1643F /* australia_food.jpg in Resources */,
+				794BCB761F5F785E000931D5 /* category_default_icon.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,6 +334,7 @@
 			files = (
 				791854D61F4D9A5E00712054 /* RestaurantCell.swift in Sources */,
 				794C48CA1F5193DB00BBA391 /* AddNewRestaurantViewController.swift in Sources */,
+				794BCB711F5CF1CD000931D5 /* MyAnnotation.swift in Sources */,
 				79DA476D1F52880D00A1643F /* Restaurant+CoreDataClass.swift in Sources */,
 				79CEE8991F52672E00A174E6 /* CategoryTableViewController.swift in Sources */,
 				79DA476B1F52880D00A1643F /* Category+CoreDataClass.swift in Sources */,
@@ -323,7 +345,9 @@
 				79DA476E1F52880D00A1643F /* Restaurant+CoreDataProperties.swift in Sources */,
 				791854D41F4D9A1A00712054 /* restaurantTableViewController.swift in Sources */,
 				791854DA1F4D9AF400712054 /* RestaurantDetailViewController.swift in Sources */,
+				794BCB6D1F57BEC4000931D5 /* AddCategoryViewController.swift in Sources */,
 				791854A31F4D92B500712054 /* AppDelegate.swift in Sources */,
+				794BCB791F5F93C9000931D5 /* mapViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
