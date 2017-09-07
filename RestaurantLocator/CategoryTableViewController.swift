@@ -64,16 +64,17 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
     //add sample data if the core data is empty
     func addSampleData(){
         //populate category data
-        populateCategoryAndRestaurantDataIntoCoreData(name: "Chinese Food", color: "Red", imageFilename: "chinese_food.jpg")
-        populateCategoryAndRestaurantDataIntoCoreData(name: "Australian Food", color: "Yellow", imageFilename: "australia_food.jpg")
-        populateCategoryAndRestaurantDataIntoCoreData(name: "Japanese Food", color: "Blue", imageFilename: "japanese_food.jpg")
+        populateCategoryAndRestaurantDataIntoCoreData(id: 1, name: "Chinese Food", color: "Red", imageFilename: "chinese_food.jpg")
+        populateCategoryAndRestaurantDataIntoCoreData(id: 2, name: "Australian Food", color: "Yellow", imageFilename: "australia_food.jpg")
+        populateCategoryAndRestaurantDataIntoCoreData(id: 3, name: "Japanese Food", color: "Blue", imageFilename: "japanese_food.jpg")
         
         saveAllChanges()
     }
     
     // call this function will add a category record to core data
-    func populateCategoryAndRestaurantDataIntoCoreData(name: String, color: String, imageFilename: String){
+    func populateCategoryAndRestaurantDataIntoCoreData(id: Int64, name: String, color: String, imageFilename: String){
         let category = NSEntityDescription.insertNewObject(forEntityName: "Category", into: managedObjectContext) as? Category
+        category!.id = id
         category!.name = name
         category!.color = color
         let image = UIImage(named: imageFilename)
@@ -82,21 +83,28 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
         //populate restaurants
         switch name{
             case "Chinese Food":
-                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "chinese_food.jpg")!, name: "New Shanghai", rating: 5, date: NSDate(), address: "323/287 Lonsdale St, Melbourne VIC 3000, Australia", notificationRadius: 0)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "chinese_food.jpg")!, id: 1, name: "New Shanghai", rating: 5, date: NSDate(), address: "323/287 Lonsdale St, Melbourne VIC 3000, Australia", notificationRadius: 0)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "chinese_food.jpg")!, id: 2, name: "Spice Temple", rating: 4, date: NSDate(), address: "8 Whiteman St, Southbank VIC 3006, Australia", notificationRadius: 200)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "chinese_food.jpg")!, id: 3, name: "Secret Kitchen (CBD Chinatown)", rating: 2, date: NSDate(), address: "222 Exhibition St, Melbourne VIC 3000, Australia", notificationRadius: 0)
                 break
             case "Australian Food":
-                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "australia_food.jpg")!, name: "Aussie Steak 'N' Burger", rating: 4, date: NSDate(), address: "12-16 Newquay Promenade, Docklands VIC 3008, Australia", notificationRadius: 0)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "australia_food.jpg")!, id: 1, name: "Aussie Steak 'N' Burger", rating: 3, date: NSDate(), address: "12-16 Newquay Promenade, Docklands VIC 3008, Australia", notificationRadius: 0)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "australia_food.jpg")!, id: 2, name: "Henry & the Fox", rating: 4, date: NSDate(), address: "525 Little Collins St, Melbourne VIC 3000, Australia", notificationRadius: 100)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "australia_food.jpg")!, id: 3, name: "The Mill", rating: 2, date: NSDate(), address: "71 Hardware Ln, Melbourne VIC 3000, Australia", notificationRadius: 0)
                 break
             case "Japanese Food":
-                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "japanese_food.jpg")!, name: "Sushi Sushi", rating: 3, date: NSDate(), address: "B-141/1341 Dandenong Rd, Chadstone VIC 3148, Australia", notificationRadius: 0)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "japanese_food.jpg")!, id: 1, name: "Miyako Japanese Cuisine & Teppanyaki", rating: 3, date: NSDate(), address: "UR2/3 Southgate Ave, Southbank VIC 3006, Australia", notificationRadius: 0)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "japanese_food.jpg")!, id: 2, name: "Hanabishi Japanese Restaurant", rating: 3, date: NSDate(), address: "187 King St, Melbourne VIC 3000, Australia", notificationRadius: 0)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "japanese_food.jpg")!, id: 3, name: "DonDon", rating: 5, date: NSDate(), address: "198 Little Lonsdale St, Melbourne VIC 3000, Australia", notificationRadius: 0)
                 break
         default: break
         }
     }
     
-    func populateRestaurantDataIntoCoreData(destinationCategory: Category, logo: UIImage, name: String, rating: Int16, date: NSDate, address: String, notificationRadius: Int16 ){
+    func populateRestaurantDataIntoCoreData(destinationCategory: Category, logo: UIImage, id: Int64, name: String, rating: Int16, date: NSDate, address: String, notificationRadius: Int16 ){
         let restaurantToBeAdded = NSEntityDescription.insertNewObject(forEntityName: "Restaurant", into: managedObjectContext) as? Restaurant
         
+        restaurantToBeAdded!.id = id
         restaurantToBeAdded!.name = name
         restaurantToBeAdded!.rating = rating
         restaurantToBeAdded!.addDate = date
@@ -104,9 +112,14 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
         restaurantToBeAdded!.notificationRadius = notificationRadius
         restaurantToBeAdded!.belongCategory = destinationCategory
         restaurantToBeAdded!.logo = UIImagePNGRepresentation(logo) as NSData?
-        var tempArray: [Restaurant] = []
-        tempArray.append(restaurantToBeAdded!)
-        destinationCategory.containRestaurant = NSSet(array: tempArray)
+        
+        if destinationCategory.containRestaurant?.count == 0{
+            var tempArray: [Restaurant] = []
+            tempArray.append(restaurantToBeAdded!)
+            destinationCategory.containRestaurant = NSSet(array: tempArray)
+        }else{
+            destinationCategory.containRestaurant?.adding(restaurantToBeAdded!)
+        }
         
         let address = restaurantToBeAdded!.address
         let geoCoder = CLGeocoder()
