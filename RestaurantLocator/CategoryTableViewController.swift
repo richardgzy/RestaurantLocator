@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import CoreLocation
 
 class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
 
@@ -106,6 +107,20 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
         var tempArray: [Restaurant] = []
         tempArray.append(restaurantToBeAdded!)
         destinationCategory.containRestaurant = NSSet(array: tempArray)
+        
+        let address = restaurantToBeAdded!.address
+        let geoCoder = CLGeocoder()
+        geoCoder.geocodeAddressString(address!) { (placemarks, error) in
+            guard
+                let placemarks = placemarks,
+                let location = placemarks.first?.location else{
+                    print("Error, can't get the location")
+                    return
+            }
+            restaurantToBeAdded!.latitude = location.coordinate.latitude
+            restaurantToBeAdded!.longitude = location.coordinate.longitude
+        }
+        
     }
     
     //call this function to save all changes in managedObjectContext
@@ -132,6 +147,10 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
                 addSampleData()
             }
             
+            //save category list to global context
+            let appdelegate = UIApplication.shared.delegate as! AppDelegate
+            appdelegate.categoryList = categoryList
+            
         }catch{
             let fetchError = error as NSError
             print(fetchError)
@@ -144,6 +163,7 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
         self.performSegue(withIdentifier: "showRestaurantListSegue", sender: "Category Cell Touch")
     }
     
+    //set up selectedCategory before editing
     override func tableView(_ tableView: UITableView, willBeginEditingRowAt indexPath: IndexPath) {
         selectedCategory = self.categoryList[(indexPath.row)] as? Category
     }
@@ -154,6 +174,7 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
         if let destinationVC = segue.destination as? restaurantTableViewController{
             if selectedCategory != nil{
                 destinationVC.currentCategory = selectedCategory
+                destinationVC.categoryList = categoryList
                 destinationVC.managedObjectContext = self.managedObjectContext
             }
         }else if let destinationVC = segue.destination as? AddCategoryViewController{

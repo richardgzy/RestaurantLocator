@@ -2,7 +2,7 @@
 //  Category+CoreDataProperties.swift
 //  RestaurantLocator
 //
-//  Created by Richard on 2017/8/27.
+//  Created by Richard on 2017/9/7.
 //  Copyright © 2017年 Richard. All rights reserved.
 //
 
@@ -19,6 +19,7 @@ extension Category {
     @NSManaged public var color: String?
     @NSManaged public var icon: NSData?
     @NSManaged public var name: String?
+    @NSManaged public var id: Int64
     @NSManaged public var containRestaurant: NSSet?
     
     func addRestaurant(value: Restaurant)
@@ -26,6 +27,7 @@ extension Category {
         let r = self.mutableSetValue(forKey: "containRestaurant")
         r.add(value)
     }
+
 }
 
 // MARK: Generated accessors for containRestaurant

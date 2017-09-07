@@ -2,7 +2,7 @@
 //  Restaurant+CoreDataProperties.swift
 //  RestaurantLocator
 //
-//  Created by Richard on 2017/8/27.
+//  Created by Richard on 2017/9/7.
 //  Copyright © 2017年 Richard. All rights reserved.
 //
 
@@ -25,6 +25,7 @@ extension Restaurant {
     @NSManaged public var name: String?
     @NSManaged public var notificationRadius: Int16
     @NSManaged public var rating: Int16
+    @NSManaged public var id: Int64
     @NSManaged public var belongCategory: Category?
 
 }

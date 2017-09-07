@@ -11,6 +11,7 @@ import CoreData
 
 class restaurantTableViewController: UITableViewController {
     var restaurantList: [NSManagedObject] = []
+    var categoryList: [NSManagedObject] = []
     var currentCategory: Category?
     var selectedRestaurant: Restaurant?
     var managedObjectContext: NSManagedObjectContext
@@ -69,6 +70,10 @@ class restaurantTableViewController: UITableViewController {
         {
             let controller: RestaurantDetailViewController = segue.destination as! RestaurantDetailViewController
             controller.currentRestaurant = selectedRestaurant
+        } else if segue.identifier == "editRestaurantSegue"{
+            let controller: AddNewRestaurantViewController = segue.destination as! AddNewRestaurantViewController
+            controller.currentRestaurant = selectedRestaurant
+            controller.categoryList = categoryList as? NSMutableArray
         }
     }
     
@@ -92,18 +97,32 @@ class restaurantTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
         
         let editOption = UITableViewRowAction(style: .normal, title: "Edit") { action, index in
-            print("edit button tapped")
+            self.performSegue(withIdentifier: "editRestaurantSegue", sender: "Restaurtant Edit Button")
         }
         editOption.backgroundColor = .orange
         
         let deleteOption = UITableViewRowAction(style: .normal, title: "Delete") { action, index in
-            print("delete button tapped")
+            let toBeDeleted = self.restaurantList[editActionsForRowAt.row]
+            self.restaurantList.remove(at: editActionsForRowAt.row)
+            self.managedObjectContext.delete(toBeDeleted)
+            self.saveAllChanges()
+            
+            tableView.reloadData()
         }
         deleteOption.backgroundColor = .red
         
         return [deleteOption, editOption]
     }
 
+    //call this function to save all changes in managedObjectContext
+    func saveAllChanges(){
+        do {
+            try self.managedObjectContext.save()
+        } catch {
+            print("cannot save \(error)")
+        }
+    }
+    
     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
 
     }

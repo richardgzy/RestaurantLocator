@@ -13,10 +13,11 @@ import CoreLocation
 class RestaurantDetailViewController: UIViewController {
     var currentRestaurant: Restaurant?
     
+    @IBOutlet weak var ratingControl: RatingControl!
     @IBOutlet weak var iconView: UIImageView!
     @IBOutlet weak var categoryLabel: UILabel!
     @IBOutlet weak var NavagationTitle: UINavigationItem!
-    @IBOutlet weak var ratingLabel: UILabel!
+//    @IBOutlet weak var ratingLabel: UILabel!
     @IBOutlet weak var addressTextView: UITextView!
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var rangeSegmentControl: UISegmentedControl!
@@ -30,7 +31,9 @@ class RestaurantDetailViewController: UIViewController {
         self.iconView.image = UIImage(data: (currentRestaurant?.logo!)! as Data)
         self.NavagationTitle.title = currentRestaurant!.name
         self.categoryLabel.text = currentRestaurant!.belongCategory?.name
-        self.ratingLabel.text = "Rating: \(currentRestaurant!.rating) Stars"
+//        self.ratingLabel.text = "Rating: \(currentRestaurant!.rating) Stars"
+        self.ratingControl.setEditable(isEditable: false)
+        self.ratingControl.setButtonSelected(numberOfStarsSelected: Int(currentRestaurant!.rating))
         self.addressTextView.text = currentRestaurant!.address
         let df: DateFormatter = DateFormatter()
         df.dateFormat = "dd-mm-yyyy"
@@ -56,6 +59,8 @@ class RestaurantDetailViewController: UIViewController {
             break
         }
         
+        let image: UIImage = UIImage(data: (self.currentRestaurant?.logo!)! as Data)!
+        
         let address = currentRestaurant?.address
         let geoCoder = CLGeocoder()
         geoCoder.geocodeAddressString(address!) { (placemarks, error) in
@@ -70,7 +75,6 @@ class RestaurantDetailViewController: UIViewController {
                     return
             }
             // Use your location
-            let image: UIImage = UIImage(data: (self.currentRestaurant?.logo!)! as Data)!
             
             let myAnnotation: MyAnnotation = MyAnnotation(newTitle: self.currentRestaurant!.name!, newNotificationRadius: (self.currentRestaurant?.notificationRadius)!, newIcon: image, lat: location.coordinate.latitude, long: location.coordinate.longitude)
             self.mapView.addAnnotation(myAnnotation)

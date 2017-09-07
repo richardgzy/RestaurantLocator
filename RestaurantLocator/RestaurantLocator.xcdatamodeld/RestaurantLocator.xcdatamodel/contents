@@ -3,6 +3,7 @@
     <entity name="Category" representedClassName="Category" syncable="YES">
         <attribute name="color" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="icon" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="containRestaurant" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Restaurant" inverseName="belongCategory" inverseEntity="Restaurant" syncable="YES"/>
     </entity>
@@ -10,6 +11,7 @@
         <attribute name="addDate" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="address" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="category" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="logo" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
         <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
@@ -19,7 +21,7 @@
         <relationship name="belongCategory" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Category" inverseName="containRestaurant" inverseEntity="Category" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Category" positionX="-54" positionY="63" width="128" height="105"/>
-        <element name="Restaurant" positionX="-63" positionY="-18" width="128" height="195"/>
+        <element name="Category" positionX="1836" positionY="3420" width="128" height="120"/>
+        <element name="Restaurant" positionX="1647" positionY="3366" width="128" height="210"/>
     </elements>
 </model>
