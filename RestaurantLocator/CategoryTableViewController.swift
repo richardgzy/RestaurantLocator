@@ -10,44 +10,88 @@ import UIKit
 import CoreData
 import CoreLocation
 
-class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
+class CategoryTableViewController: UIViewController, AddCategoryDelegate, UpdateCategoryDelegate,  UITableViewDelegate, UITableViewDataSource{
 
-    @IBAction func addNewCategoryButton(_ sender: Any) {
-        performSegue(withIdentifier: "addNewCategorySegue", sender: "Add Category Button")
-    }
-    var categoryList: [NSManagedObject] = []
+    var categoryList: [Category] = []
     var selectedCategory: Category?
     var restaurantList: [NSManagedObject] = []
     var managedObjectContext : NSManagedObjectContext
     
+    @IBAction func addNewCategoryButton(_ sender: Any) {
+        performSegue(withIdentifier: "addNewCategorySegue", sender: "Add Category Button")
+    }
+    
+    @IBOutlet weak var categoryTableView: UITableView!
+    
     //set up the tableview edit button
     @IBAction func categoryEditButton(_ sender: UIBarButtonItem) {
-        if self.tableView.isEditing {
-            self.tableView.isEditing = false
-            self.tableView.setEditing(false, animated: false)
+        if self.categoryTableView.isEditing {
+            self.categoryTableView.isEditing = false
+            self.categoryTableView.setEditing(false, animated: false)
             sender.style = UIBarButtonItemStyle.plain
             sender.title = "Edit"
-            self.tableView.reloadData()
+            self.categoryTableView.reloadData()
         } else {
-            self.tableView.isEditing = true
-            self.tableView.setEditing(true, animated: true)
+            self.categoryTableView.isEditing = true
+            self.categoryTableView.setEditing(true, animated: true)
             sender.title = "Done"
             sender.style =  UIBarButtonItemStyle.done
-            self.tableView.reloadData()
+            self.categoryTableView.reloadData()
         }
+    }
+    @IBAction func sortByNameButton(_ sender: Any) {
+        var nameArray: [String] = []
+        var sortedArray: [NSManagedObject] = []
+        
+        for category in categoryList{
+            nameArray.append(category.name!)
+        }
+
+        nameArray.sort()
+        for item in nameArray{
+            for category in categoryList{
+                if category.name == item{
+                    sortedArray.append(category)
+                }
+            }
+        }
+        categoryList = sortedArray as! [Category]
+        categoryTableView.reloadData()
+    }
+    
+    @IBAction func sortByCountButton(_ sender: Any) {
+        var countArray: [Int] = []
+        var sortedArray: [NSManagedObject] = []
+        
+        for category in categoryList {
+            countArray.append(category.containRestaurant!.count)
+        }
+        
+        //remove duplicate
+        countArray = Array(Set(countArray))
+        
+        for item in countArray{
+            for category in categoryList {
+                if category.containRestaurant!.count == item{
+                    sortedArray.append(category)
+                }
+            }
+        }
+        categoryList = sortedArray as! [Category]
+        categoryTableView.reloadData()
     }
     
     //define what to do when user rearrange the table cells
-    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         
-        let item : Category = categoryList[sourceIndexPath.row] as! Category;
+        let item : Category = categoryList[sourceIndexPath.row] ;
         categoryList.remove(at: sourceIndexPath.row);
         categoryList.insert(item, at: destinationIndexPath.row)
         self.saveAllChanges()
-        self.tableView.reloadData()
+        self.categoryTableView.reloadData()
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == UITableViewCellEditingStyle.delete{
             categoryList.remove(at: indexPath.row);
             self.categoryEditButton(editButtonItem);
@@ -69,6 +113,11 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
         populateCategoryAndRestaurantDataIntoCoreData(id: 3, name: "Japanese Food", color: "Blue", imageFilename: "japanese_food.jpg")
         
         saveAllChanges()
+        
+        let myAlert = UIAlertController(title: "Sample Data Added", message: "You don't have any category in your application, we add some sample data for you, please restart the app to have a look, enjoy!", preferredStyle: .alert)
+        let myAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        myAlert.addAction(myAction)
+        present(myAlert, animated: true, completion: nil)
     }
     
     // call this function will add a category record to core data
@@ -84,12 +133,12 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
         switch name{
             case "Chinese Food":
                 populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "chinese_food.jpg")!, id: 1, name: "New Shanghai", rating: 5, date: NSDate(), address: "323/287 Lonsdale St, Melbourne VIC 3000, Australia", notificationRadius: 0)
-                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "chinese_food.jpg")!, id: 2, name: "Spice Temple", rating: 4, date: NSDate(), address: "8 Whiteman St, Southbank VIC 3006, Australia", notificationRadius: 200)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "chinese_food.jpg")!, id: 2, name: "Spice Temple", rating: 4, date: NSDate(), address: "8 Whiteman St, Southbank VIC 3006, Australia", notificationRadius: 250)
                 populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "chinese_food.jpg")!, id: 3, name: "Secret Kitchen (CBD Chinatown)", rating: 2, date: NSDate(), address: "222 Exhibition St, Melbourne VIC 3000, Australia", notificationRadius: 0)
                 break
             case "Australian Food":
                 populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "australia_food.jpg")!, id: 1, name: "Aussie Steak 'N' Burger", rating: 3, date: NSDate(), address: "12-16 Newquay Promenade, Docklands VIC 3008, Australia", notificationRadius: 0)
-                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "australia_food.jpg")!, id: 2, name: "Henry & the Fox", rating: 4, date: NSDate(), address: "525 Little Collins St, Melbourne VIC 3000, Australia", notificationRadius: 100)
+                populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "australia_food.jpg")!, id: 2, name: "Henry & the Fox", rating: 4, date: NSDate(), address: "525 Little Collins St, Melbourne VIC 3000, Australia", notificationRadius: 1000)
                 populateRestaurantDataIntoCoreData(destinationCategory: category!, logo: UIImage(named: "australia_food.jpg")!, id: 3, name: "The Mill", rating: 2, date: NSDate(), address: "71 Hardware Ln, Melbourne VIC 3000, Australia", notificationRadius: 0)
                 break
             case "Japanese Food":
@@ -152,7 +201,7 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
         let fetchRequestForRestaurant = NSFetchRequest<NSManagedObject>(entityName: "Restaurant")
         
         do{
-            self.categoryList = try self.managedObjectContext.fetch(fetchRequestForCategory)
+            self.categoryList = try self.managedObjectContext.fetch(fetchRequestForCategory as! NSFetchRequest<NSFetchRequestResult>) as! [Category]
             self.restaurantList = try self.managedObjectContext.fetch(fetchRequestForRestaurant)
             
             //  Implement of initial data needed
@@ -168,17 +217,36 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
             let fetchError = error as NSError
             print(fetchError)
         }
+        
+        categoryTableView!.delegate = self
+        categoryTableView!.dataSource = self
+        
+        
+        //sort table as the sequence saved
+        let path = Bundle.main.path(forResource: "myData", ofType: "plist")
+        let dict = NSDictionary(contentsOfFile: path!)
+        let tableSequence = dict!.object(forKey: "Category") as! [String]
+        var sortedArray: [NSManagedObject] = []
+        for item in tableSequence{
+            for category in categoryList {
+                if category.name == item{
+                    sortedArray.append(category)
+                }
+            }
+        }
+        categoryList = sortedArray as! [Category]
+        
     }
     
     //perform segue and direct user to the restaurant detail page
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        selectedCategory = self.categoryList[indexPath.row] as? Category
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedCategory = self.categoryList[indexPath.row]
         self.performSegue(withIdentifier: "showRestaurantListSegue", sender: "Category Cell Touch")
     }
     
     //set up selectedCategory before editing
-    override func tableView(_ tableView: UITableView, willBeginEditingRowAt indexPath: IndexPath) {
-        selectedCategory = self.categoryList[(indexPath.row)] as? Category
+    func tableView(_ tableView: UITableView, willBeginEditingRowAt indexPath: IndexPath) {
+        selectedCategory = self.categoryList[(indexPath.row)]
     }
     
     
@@ -206,15 +274,23 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
     // implement delegate function
     func addCategory(newCategory: Category) {
         categoryList.append(newCategory)
-        self.tableView.reloadData()
+        categoryTableView.reloadData()
+    }
+    
+    func updateCategory(updatedCategory: [Category]){
+        categoryList = updatedCategory
+        for item in categoryList{
+            managedObjectContext.refresh(item as NSManagedObject, mergeChanges: true)
+        }
+        categoryTableView.reloadData()
     }
     
     // all cells except the total cell are editable
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
-    override func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
+    func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
         
         let editOption = UITableViewRowAction(style: .normal, title: "Edit") { action, index in
             self.performSegue(withIdentifier: "addNewCategorySegue", sender: "Category Edit Button")
@@ -235,7 +311,7 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
     }
     
     // all cells are moveable
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
@@ -245,20 +321,20 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
     
     // MARK: - Table view data source
     
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return self.categoryList.count
     }
     
     //configure the cell
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! CategoryCell
             
-            let s = self.categoryList[indexPath.row] as! Category
+            let s = self.categoryList[indexPath.row]
             cell.categoryNameLabel.text = s.name!
             let restaurantNumber = s.containRestaurant!.count
 //            if restaurantNumber == nil{
@@ -291,8 +367,8 @@ class CategoryTableViewController: UITableViewController, AddCategoryDelegate{
             return cell
     }
     
-//    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-//        return 110
-//    }
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 110
+    }
     
 }

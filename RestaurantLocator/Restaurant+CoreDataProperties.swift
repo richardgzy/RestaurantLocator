@@ -19,13 +19,13 @@ extension Restaurant {
     @NSManaged public var addDate: NSDate?
     @NSManaged public var address: String?
     @NSManaged public var category: String?
+    @NSManaged public var id: Int64
     @NSManaged public var latitude: Double
     @NSManaged public var logo: NSData?
     @NSManaged public var longitude: Double
     @NSManaged public var name: String?
     @NSManaged public var notificationRadius: Int16
     @NSManaged public var rating: Int16
-    @NSManaged public var id: Int64
     @NSManaged public var belongCategory: Category?
 
 }

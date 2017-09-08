@@ -11,58 +11,15 @@ import CoreData
 import MapKit
 
 class mapViewController: UIViewController, CLLocationManagerDelegate {
-    var annotationList: [MyAnnotation] = []
+    var allRestaurants: [Restaurant] = []
     var locationManager: CLLocationManager = CLLocationManager()
     var currentLocation: CLLocationCoordinate2D?
     var appdelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
-    var categoryList: [NSManagedObject] = []
-    
+    var categoryList: [Category] = []
+
     @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var radiusSelector: UISegmentedControl!
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-        locationManager.distanceFilter = 1
-        locationManager.delegate = self
-        locationManager.requestAlwaysAuthorization()
-        locationManager.startUpdatingLocation()
-        
-        categoryList = appdelegate.categoryList as! [Category]
-        
-        //load all restaurant coordinates
-        if categoryList.count != 0{
-            for category in self.categoryList as! [Category] {
-                let restaurantArray = category.containRestaurant?.allObjects as! [Restaurant]
-                for restaurant in restaurantArray{
-                    let image: UIImage = UIImage(data: (restaurant.logo!) as Data)!
-                    let address = restaurant.address
-                    let geoCoder = CLGeocoder()
-                    geoCoder.geocodeAddressString(address!) { (placemarks, error) in
-                        guard
-                            let placemarks = placemarks,
-                            let location = placemarks.first?.location
-                            else {
-                                print("error finding location")
-                                return
-                            }
-                    restaurant.latitude = location.coordinate.latitude
-                    restaurant.longitude = location.coordinate.longitude
-                        
-                    let annotation: MyAnnotation = MyAnnotation(newTitle: restaurant.name!, newNotificationRadius: restaurant.notificationRadius, newIcon: image, lat: restaurant.latitude, long: restaurant.longitude)
-                    self.annotationList.append(annotation)
-                    self.mapView.addAnnotation(annotation)
-                    }
-                }
-            }
-        }
-        
-        radiusSelector.addTarget(self, action: Selector(("segmentedControlValueChanged:")), for:.valueChanged)
-    }
-    
-    func segmentedControlValueChanged(segment: UISegmentedControl) {
-        switch segment.selectedSegmentIndex {
+    @IBAction func userRadiusChanged(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
         case 0:
             let mapRegion = MKCoordinateRegionMakeWithDistance(currentLocation!, 50, 50)
             self.mapView.setRegion(mapRegion, animated: true)
@@ -86,10 +43,55 @@ class mapViewController: UIViewController, CLLocationManagerDelegate {
         default: break
         }
     }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+        locationManager.distanceFilter = 1
+        locationManager.delegate = self
+        locationManager.requestAlwaysAuthorization()
+        locationManager.startUpdatingLocation()
+        
+        categoryList = appdelegate.categoryList!
+        
+        //load all restaurant coordinates
+        if categoryList.count != 0{
+            for category in self.categoryList {
+                let restaurantArray = category.containRestaurant?.allObjects as! [Restaurant]
+                showRestaurantAnnotationOnMapView(restaurantArray: restaurantArray, range: Double.infinity)
+            }
+        }
+    }
+    
+    func showRestaurantAnnotationOnMapView(restaurantArray: [Restaurant], range: Double){
+        for restaurant in restaurantArray{
+            let image: UIImage = UIImage(data: (restaurant.logo!) as Data)!
+            let address = restaurant.address
+            let geoCoder = CLGeocoder()
+            geoCoder.geocodeAddressString(address!) { (placemarks, error) in
+                guard
+                    let placemarks = placemarks,
+                    let location = placemarks.first?.location
+                    else {
+                        print("error finding location")
+                        return
+                }
+                restaurant.latitude = location.coordinate.latitude
+                restaurant.longitude = location.coordinate.longitude
+                
+                let annotation: MyAnnotation = MyAnnotation(newTitle: restaurant.name!, newNotificationRadius: restaurant.notificationRadius, newIcon: image, lat: restaurant.latitude, long: restaurant.longitude)
+                self.allRestaurants.append(restaurant)
+                self.mapView.addAnnotation(annotation)
+            }
+        }
+    }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let loc = locations.last
         currentLocation = loc?.coordinate
+        let userPosition = CLLocation(latitude: currentLocation!.latitude, longitude: currentLocation!.longitude)
+        
         
         if(loc != nil) {
 //            let userAnnotation = MKPointAnnotation()
@@ -99,6 +101,22 @@ class mapViewController: UIViewController, CLLocationManagerDelegate {
             mapView.showsUserLocation = true
             let mapRegion = MKCoordinateRegionMakeWithDistance(currentLocation!, 2000, 2000)
             self.mapView.setRegion(mapRegion, animated: true)
+        }
+        
+        //geofencing
+        var userEnteredRestaurantArea = [String : Bool]()
+        
+        if allRestaurants.count != 0{
+            
+            for r in allRestaurants{
+                let restaurantPosition = CLLocation(latitude: r.latitude, longitude: r.longitude)
+                if restaurantPosition.distance(from: userPosition) <= Double(r.notificationRadius){
+                    showAlert(title: "Welcome!", message: "Welcome to \(r.name!)")
+                    userEnteredRestaurantArea[r.name!] = true
+                } else {
+                    userEnteredRestaurantArea[r.name!] = false
+                }
+            }
         }
     }
     

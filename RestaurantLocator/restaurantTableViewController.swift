@@ -8,27 +8,55 @@
 
 import UIKit
 import CoreData
+protocol UpdateCategoryDelegate {
+    func updateCategory(updatedCategory: [Category])
+}
 
-class restaurantTableViewController: UITableViewController {
-    var restaurantList: [NSManagedObject] = []
-    var categoryList: [NSManagedObject] = []
+class restaurantTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    
+    var restaurantList: [Restaurant] = []
+    var categoryList: [Category] = []
     var currentCategory: Category?
     var selectedRestaurant: Restaurant?
     var managedObjectContext: NSManagedObjectContext
+    var delegate: UpdateCategoryDelegate?
+    
+    @IBOutlet weak var restaurantTableView: UITableView!
+    @IBAction func editRestaurantButton(_ sender: UIBarButtonItem) {
+        if self.restaurantTableView.isEditing {
+            self.restaurantTableView.isEditing = false
+            self.restaurantTableView.setEditing(false, animated: false)
+            sender.style = UIBarButtonItemStyle.plain
+            sender.title = "Edit"
+            self.restaurantTableView.reloadData()
+        } else {
+            self.restaurantTableView.isEditing = true
+            self.restaurantTableView.setEditing(true, animated: true)
+            sender.title = "Done"
+            sender.style =  UIBarButtonItemStyle.done
+            self.restaurantTableView.reloadData()
+        }
+    }
+    
+    @IBAction func sortByNameButton(_ sender: Any) {
+    }
+    @IBAction func sortByRating(_ sender: Any) {
+    }
+    @IBAction func addNewRestaurantButton(_ sender: Any) {
+    }
     
     func addRestaurant(restaurant: Restaurant) {
-        self.currentCategory?.addRestaurant(value: restaurant)
-        self.restaurantList = currentCategory?.containRestaurant?.allObjects as! [Restaurant]
-        self.tableView.reloadData()
+        currentCategory?.addRestaurant(value: restaurant)
+        restaurantList = currentCategory?.containRestaurant?.allObjects as! [Restaurant]
+        restaurantTableView.reloadData()
         do
         {
-            try self.managedObjectContext.save()
+            try managedObjectContext.save()
         }
         catch
         {
             print(error)
-        }
-    }
+        }     }
     
     required init?(coder aDecoder: NSCoder) {
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -37,9 +65,13 @@ class restaurantTableViewController: UITableViewController {
     }
     
     override func viewDidLoad() {
+        restaurantTableView.dataSource = self
+        restaurantTableView.delegate = self
+        
         if currentCategory != nil{
             restaurantList = currentCategory?.containRestaurant?.allObjects as! [Restaurant]
         }
+        
         super.viewDidLoad()
     }
 
@@ -50,18 +82,18 @@ class restaurantTableViewController: UITableViewController {
 
     // MARK: - Table view data source
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return self.restaurantList.count
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        selectedRestaurant = self.restaurantList[indexPath.row] as? Restaurant
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedRestaurant = self.restaurantList[indexPath.row]
         self.performSegue(withIdentifier: "showRestaurantDetailSegue", sender: (Any).self)
     }
 
@@ -77,11 +109,11 @@ class restaurantTableViewController: UITableViewController {
         }
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCell(withIdentifier: "RestaurantCell", for: indexPath) as! RestaurantCell
             
             // Configure the cell...
-            let s = self.restaurantList[indexPath.row] as! Restaurant
+            let s = self.restaurantList[indexPath.row] 
             cell.restaurantNameLabel.text = s.name!
             let df: DateFormatter = DateFormatter()
             df.dateFormat = "dd-MM-yyyy"
@@ -90,11 +122,11 @@ class restaurantTableViewController: UITableViewController {
             return cell
     }
 
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
-    override func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
+    func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
         
         let editOption = UITableViewRowAction(style: .normal, title: "Edit") { action, index in
             self.performSegue(withIdentifier: "editRestaurantSegue", sender: "Restaurtant Edit Button")
@@ -105,9 +137,20 @@ class restaurantTableViewController: UITableViewController {
             let toBeDeleted = self.restaurantList[editActionsForRowAt.row]
             self.restaurantList.remove(at: editActionsForRowAt.row)
             self.managedObjectContext.delete(toBeDeleted)
+            
+            let tempCategory = toBeDeleted.belongCategory!
+            for item in self.categoryList{
+                if item == tempCategory{
+                    
+                }
+            }
+            
+            self.delegate?.updateCategory(updatedCategory: self.categoryList)
+            
             self.saveAllChanges()
             
             tableView.reloadData()
+            
         }
         deleteOption.backgroundColor = .red
         
@@ -123,23 +166,17 @@ class restaurantTableViewController: UITableViewController {
         }
     }
     
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
+    func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
 
     }
 
     // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         return true
     }
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 110
     }
-    */
 
 }
